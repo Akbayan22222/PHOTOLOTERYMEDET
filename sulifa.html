@@ -268,17 +268,13 @@
 
     .controls {
       position: absolute;
-      right: 18px;
-      bottom: 18px;
+      right: 24px;
+      bottom: 24px;
       z-index: 50;
       display: flex;
-      gap: 8px;
-      opacity: 0.08;
-      transition: .2s ease;
-    }
-
-    .controls:hover {
+      gap: 10px;
       opacity: 1;
+      transition: .2s ease;
     }
 
     button {
@@ -337,9 +333,7 @@
     </section>
 
     <div class="controls">
-      <button onclick="newGame()">Жаңарту</button>
-      <button onclick="shuffleHiddenHands()">Араластыру</button>
-      <button onclick="toggleFullscreen()">Fullscreen</button>
+      <button onclick="newGame()">NEW</button>
     </div>
   </main>
 
@@ -465,8 +459,8 @@
       }
 
       modal.classList.add("show");
-      miniHint.textContent = "Нәтиже ашылды. Қайта бастау үшін экранның кез келген жерін басыңыз.";
-      countdown.textContent = "Экранның кез келген жерін бассаңыз қайта басталады";
+      miniHint.textContent = "Нәтиже ашылды. Қайта бастау үшін NEW батырмасын басыңыз.";
+      countdown.textContent = "Қайта бастау үшін NEW батырмасын басыңыз";
     }
 
     function startAutoRefresh() {
@@ -506,12 +500,8 @@
       if (e.key.toLowerCase() === "f") toggleFullscreen();
     });
 
-    // Нәтиже ашылып тұрған кезде экранның кез келген жерін басса — қайта басталады.
-    document.addEventListener("click", (e) => {
-      if (!state.locked) return;
-      if (e.target.closest(".controls")) return;
-      newGame();
-    });
+    // Қайта бастау тек NEW батырмасы арқылы істейді.
+    // Экранның басқа жерін басу ұяшық таңдауға кедергі жасамайды.
 
     buildBoard();
     newGame();
