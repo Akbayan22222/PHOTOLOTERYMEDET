@@ -19,14 +19,13 @@
       background: #000;
       font-family: Arial, Helvetica, sans-serif;
     }
-
     /*
       GitHub-қа салатын файлдар:
       1) index.html
-      2) sulifa.png  — сен жіберген фон сурет
-
-      Қолдардың PNG суреттері интернеттен автоматты алынады.
-      Қаласаң кейін өз PNG суреттеріңмен ауыстыра аласың.
+      2) sulifa.png  — фон сурет
+      3) tas.png       — тас қол суреті
+      4) kagaz.png     — қағаз қол суреті
+      5) kaishy.png    — қайшы қол суреті
     */
 
     :root {
@@ -250,26 +249,13 @@
     }
 
     .mini-hint {
-      position: absolute;
-      left: 50%;
-      bottom: 3.2vh;
-      transform: translateX(-50%);
-      z-index: 6;
-      padding: 8px 18px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.45);
-      border: 1px solid rgba(255,255,255,.22);
-      color: rgba(255,255,255,.74);
-      font-size: clamp(12px, 1.2vw, 18px);
-      letter-spacing: 1px;
-      text-align: center;
-      pointer-events: none;
+      display: none;
     }
 
     .controls {
       position: absolute;
       right: 24px;
-      bottom: 24px;
+      top: 24px;
       z-index: 50;
       display: flex;
       gap: 10px;
@@ -309,7 +295,7 @@
   <main class="game">
     <section class="board" id="board"></section>
 
-    <div class="mini-hint" id="miniHint">Екі ұяшық таңдаңыз. Нәтиже 1 VS 1 болып осы экранда ашылады.</div>
+    <div class="mini-hint" id="miniHint"></div>
 
     <section class="versus-modal" id="modal">
       <div class="dark-glass"></div>
@@ -322,7 +308,7 @@
         <div class="vs">
           <div class="vs-main">1 VS 1</div>
           <div class="winner" id="winnerText">ЖЕҢІМПАЗ</div>
-          <div class="countdown" id="countdown">Экранның кез келген жерін бассаңыз қайта басталады</div>
+          <div class="countdown" id="countdown"></div>
         </div>
 
         <div class="fighter">
@@ -343,19 +329,19 @@
         key: "rock",
         name: "ТАС",
         beats: "scissors",
-        img: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rock-paper-scissors%20(rock).png"
+        img: "tas.png"
       },
       {
         key: "scissors",
         name: "ҚАЙШЫ",
         beats: "paper",
-        img: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rock-paper-scissors%20(scissors).png"
+        img: "kaishy.png"
       },
       {
         key: "paper",
         name: "ҚАҒАЗ",
         beats: "rock",
-        img: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rock-paper-scissors%20(paper).png"
+        img: "kagaz.png"
       }
     ];
 
@@ -419,7 +405,7 @@
         };
         cell.classList.add("selected-a");
         state.step = 2;
-        miniHint.textContent = "Екінші ұяшықты таңдаңыз";
+        miniHint.textContent = "";
         return;
       }
 
@@ -478,7 +464,7 @@
       state.locked = false;
 
       modal.classList.remove("show");
-      miniHint.textContent = "Екі ұяшық таңдаңыз. Нәтиже 1 VS 1 болып осы экранда ашылады.";
+      miniHint.textContent = "";
 
       document.querySelectorAll(".cell").forEach(cell => {
         cell.classList.remove("selected-a", "selected-b");
