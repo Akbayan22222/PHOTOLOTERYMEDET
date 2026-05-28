@@ -326,7 +326,7 @@
         <div class="vs">
           <div class="vs-main">1 VS 1</div>
           <div class="winner" id="winnerText">ЖЕҢІМПАЗ</div>
-          <div class="countdown" id="countdown">30 секундтан кейін жаңарады</div>
+          <div class="countdown" id="countdown">Экранның кез келген жерін бассаңыз қайта басталады</div>
         </div>
 
         <div class="fighter">
@@ -373,7 +373,7 @@
       locked: false,
       resetTimer: null,
       countdownTimer: null,
-      secondsLeft: 30
+      secondsLeft: 0
     };
 
     const board = document.getElementById("board");
@@ -465,29 +465,13 @@
       }
 
       modal.classList.add("show");
-      miniHint.textContent = "Нәтиже ашылды. 30 секундтан кейін өзі жаңарады.";
-      startAutoRefresh();
+      miniHint.textContent = "Нәтиже ашылды. Қайта бастау үшін экранның кез келген жерін басыңыз.";
+      countdown.textContent = "Экранның кез келген жерін бассаңыз қайта басталады";
     }
 
     function startAutoRefresh() {
-      clearTimeout(state.resetTimer);
-      clearInterval(state.countdownTimer);
-
-      state.secondsLeft = 30;
-      countdown.textContent = `${state.secondsLeft} секундтан кейін жаңарады`;
-
-      state.countdownTimer = setInterval(() => {
-        state.secondsLeft--;
-        countdown.textContent = `${state.secondsLeft} секундтан кейін жаңарады`;
-
-        if (state.secondsLeft <= 0) {
-          clearInterval(state.countdownTimer);
-        }
-      }, 1000);
-
-      state.resetTimer = setTimeout(() => {
-        newGame();
-      }, 30000);
+      // Автоматты 30 секундтық жаңарту өшірілді.
+      // Енді нәтиже шыққаннан кейін экранның кез келген жерін басса, ойын қайта басталады.
     }
 
     function newGame() {
@@ -520,6 +504,13 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === " " || e.key === "Enter") newGame();
       if (e.key.toLowerCase() === "f") toggleFullscreen();
+    });
+
+    // Нәтиже ашылып тұрған кезде экранның кез келген жерін басса — қайта басталады.
+    document.addEventListener("click", (e) => {
+      if (!state.locked) return;
+      if (e.target.closest(".controls")) return;
+      newGame();
     });
 
     buildBoard();
