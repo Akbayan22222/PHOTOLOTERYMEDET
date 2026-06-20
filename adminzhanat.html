@@ -1,0 +1,156 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ADMIN - ZHANAT MUHAMEDZHANOV SHOW</title>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <style>
+        body {
+            background: #1a1a1a;
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        button {
+            width: 90%;
+            height: 150px;
+            background: #ff0055;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(255, 0, 85, 0.4);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #status {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            color: gold;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>ZHANAT MUHAMEDZHANOV SHOW</h1>
+
+    <div id="status">ПОДКЛЮЧЕНИЕ...</div>
+
+    <button onclick="sendSpin()">
+        🎰 КРУТИТЬ БАРАБАН 🎰
+    </button>
+
+    <script>
+        /*
+            ЖАНАТТЫҢ ЖЕКЕ БАЙЛАНЫС ID-СІ.
+
+            Бұл ID lottery.html және screen.html
+            файлдарындағы ID-мен бірдей болуы керек.
+        */
+        const TARGET_ID = 'zhanat_luck_2026';
+
+        const peer = new Peer();
+
+        let conn = null;
+        let reconnectTimer = null;
+
+        function setStatus(text, color) {
+            const status = document.getElementById('status');
+
+            status.innerText = text;
+            status.style.color = color;
+        }
+
+        function connect() {
+            if (conn && conn.open) {
+                return;
+            }
+
+            setStatus('ПОИСК ЭКРАНА...', 'gold');
+
+            conn = peer.connect(TARGET_ID, {
+                reliable: true
+            });
+
+            conn.on('open', () => {
+                setStatus('ЭКРАН ПОДКЛЮЧЕН! ✅', '#00ffcc');
+            });
+
+            conn.on('close', () => {
+                setStatus('СВЯЗЬ ПОТЕРЯНА. ПОИСК ЭКРАНА...', 'gold');
+
+                clearTimeout(reconnectTimer);
+
+                reconnectTimer = setTimeout(() => {
+                    connect();
+                }, 3000);
+            });
+
+            conn.on('error', (error) => {
+                console.error('Connection error:', error);
+
+                setStatus('ПОИСК ЭКРАНА...', 'gold');
+
+                clearTimeout(reconnectTimer);
+
+                reconnectTimer = setTimeout(() => {
+                    connect();
+                }, 3000);
+            });
+        }
+
+        function sendSpin() {
+            if (conn && conn.open) {
+                conn.send({
+                    type: 'SPIN'
+                });
+
+                setStatus('КОМАНДА ОТПРАВЛЕНА! ✅', '#00ffcc');
+
+                setTimeout(() => {
+                    if (conn && conn.open) {
+                        setStatus('ЭКРАН ПОДКЛЮЧЕН! ✅', '#00ffcc');
+                    }
+                }, 2000);
+            } else {
+                alert(
+                    'Экран не найден! Сначала откройте screen.html.'
+                );
+
+                connect();
+            }
+        }
+
+        peer.on('open', () => {
+            connect();
+        });
+
+        peer.on('error', (error) => {
+            console.error('PeerJS error:', error);
+
+            setStatus('ОШИБКА ПОДКЛЮЧЕНИЯ', '#ff0055');
+        });
+    </script>
+
+</body>
+</html>
+```
