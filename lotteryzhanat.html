@@ -1,0 +1,314 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>РЕГИСТРАЦИЯ - ZHANAT MUHAMEDZHANOV SHOW</title>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .box {
+            border: 2px solid #ff0055;
+            border-radius: 25px;
+            padding: 30px 20px;
+            background: #111;
+            max-width: 400px;
+            margin: 20px auto;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2);
+        }
+
+        h2 {
+            color: #ff0055;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            opacity: 0.8;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            box-sizing: border-box;
+            width: 90%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: #222;
+            color: white;
+            font-size: 18px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ff0055;
+        }
+
+        #photo-preview {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: none;
+            margin: 20px auto;
+            border: 4px solid #ff0055;
+            box-shadow: 0 0 15px #ff0055;
+        }
+
+        .btn-photo {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            width: 90%;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .btn-send {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 90%;
+            display: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #status {
+            color: #00ffcc;
+            margin-top: 30px;
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box" id="reg-form">
+
+        <h2>ZHANAT MUHAMEDZHANOV</h2>
+
+        <p>
+            Сделайте фото и введите имя для участия в розыгрыше!
+        </p>
+
+        <input
+            type="text"
+            id="userName"
+            placeholder="Ваше имя"
+            autocomplete="off"
+            maxlength="50"
+        >
+
+        <input
+            type="file"
+            id="userPhoto"
+            accept="image/*"
+            capture="user"
+            style="display: none"
+        >
+
+        <button
+            type="button"
+            class="btn-photo"
+            onclick="document.getElementById('userPhoto').click()"
+        >
+            📸 СДЕЛАТЬ ФОТО
+        </button>
+
+        <img
+            id="photo-preview"
+            src=""
+            alt="Фото участника"
+        >
+
+        <br>
+
+        <button
+            type="button"
+            id="sendBtn"
+            class="btn-send"
+            onclick="sendData()"
+        >
+            ОТПРАВИТЬ ЖАНАТУ 🚀
+        </button>
+
+    </div>
+
+    <div id="status">
+        ✅ ВЫ В СПИСКЕ ЖАНАТА!<br>
+        ЖДИТЕ РОЗЫГРЫША 🎁
+    </div>
+
+    <script>
+        /*
+            ЖАНАТТЫҢ ЖЕКЕ БАЙЛАНЫС ID-СІ.
+
+            Бұл ID admin.html және screen.html
+            файлдарындағы ID-мен бірдей болуы керек.
+        */
+        const TARGET_SCREEN_ID = 'zhanat_luck_2026';
+
+        const peer = new Peer();
+
+        let photoBase64 = '';
+        let isSending = false;
+
+        const photoInput = document.getElementById('userPhoto');
+        const photoPreview = document.getElementById('photo-preview');
+        const sendButton = document.getElementById('sendBtn');
+
+        photoInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Выберите фотографию!');
+
+                photoInput.value = '';
+
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function () {
+                photoBase64 = reader.result;
+
+                photoPreview.src = photoBase64;
+                photoPreview.style.display = 'block';
+
+                sendButton.style.display = 'inline-block';
+            };
+
+            reader.onerror = function () {
+                alert('Не удалось загрузить фотографию.');
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        function sendData() {
+            if (isSending) {
+                return;
+            }
+
+            const name = document
+                .getElementById('userName')
+                .value
+                .trim();
+
+            if (!name) {
+                alert('Введите имя!');
+
+                return;
+            }
+
+            if (!photoBase64) {
+                alert('Сделайте или выберите фотографию!');
+
+                return;
+            }
+
+            isSending = true;
+
+            sendButton.disabled = true;
+            sendButton.innerText = 'ОТПРАВКА...';
+
+            const conn = peer.connect(TARGET_SCREEN_ID, {
+                reliable: true
+            });
+
+            const connectionTimeout = setTimeout(() => {
+                if (!conn.open) {
+                    isSending = false;
+
+                    sendButton.disabled = false;
+                    sendButton.innerText = 'ОТПРАВИТЬ ЖАНАТУ 🚀';
+
+                    alert(
+                        'Экран лотереи не найден. Проверьте, открыт ли screen.html.'
+                    );
+
+                    conn.close();
+                }
+            }, 10000);
+
+            conn.on('open', () => {
+                clearTimeout(connectionTimeout);
+
+                conn.send({
+                    type: 'REGISTER',
+                    name: name,
+                    photo: photoBase64
+                });
+
+                document.getElementById('reg-form').style.display = 'none';
+                document.getElementById('status').style.display = 'block';
+
+                setTimeout(() => {
+                    conn.close();
+                }, 1000);
+            });
+
+            conn.on('error', (error) => {
+                clearTimeout(connectionTimeout);
+
+                console.error('Connection error:', error);
+
+                isSending = false;
+
+                sendButton.disabled = false;
+                sendButton.innerText = 'ОТПРАВИТЬ ЖАНАТУ 🚀';
+
+                alert(
+                    'Ошибка! Проверьте, открыт ли экран лотереи у Жаната.'
+                );
+            });
+        }
+
+        peer.on('error', (error) => {
+            console.error('PeerJS error:', error);
+        });
+    </script>
+
+</body>
+</html>
+```
