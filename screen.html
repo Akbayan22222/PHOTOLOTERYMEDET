@@ -1,0 +1,405 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ZHANAT MUHAMEDZHANOV SHOW - SCREEN</title>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: "Arial Black", Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        #branding {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            text-align: left;
+            z-index: 100;
+        }
+
+        #branding h1 {
+            font-size: 35px;
+            margin: 0;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px #ff0055;
+        }
+
+        #branding p {
+            color: gold;
+            margin: 5px 0 0;
+        }
+
+        #connection-status {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            color: gold;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        #guests-strip {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            right: 20px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+
+        .strip-photo {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #ff0055;
+            object-fit: cover;
+            animation: fadeIn 0.5s;
+        }
+
+        #winner-card {
+            text-align: center;
+            display: none;
+            z-index: 200;
+            position: relative;
+            margin-bottom: 8vh;
+        }
+
+        #winner-title {
+            font-size: 40px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        #winner-photo {
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            border: 15px solid gold;
+            box-shadow: 0 0 80px gold;
+            object-fit: cover;
+        }
+
+        #winner-name {
+            font-size: 90px;
+            color: gold;
+            margin-top: 20px;
+            text-shadow: 0 0 40px gold;
+            text-transform: uppercase;
+        }
+
+        #empty-message {
+            display: none;
+            position: absolute;
+            bottom: 50px;
+            color: #ff0055;
+            font-family: Arial, sans-serif;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .flash-win {
+            animation: flashWinner 0.3s infinite alternate;
+        }
+
+        @keyframes flashWinner {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            to {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        @media (max-width: 700px) {
+            #branding h1 {
+                font-size: 22px;
+            }
+
+            #connection-status {
+                top: 70px;
+                left: 25px;
+                right: auto;
+                font-size: 13px;
+            }
+
+            #guests-strip {
+                top: 115px;
+            }
+
+            #winner-photo {
+                width: 250px;
+                height: 250px;
+                border-width: 10px;
+            }
+
+            #winner-name {
+                font-size: 48px;
+            }
+
+            #winner-title {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="branding">
+        <h1>ZHANAT MUHAMEDZHANOV SHOW</h1>
+
+        <p>КТО СЧАСТЛИВЫЙ ГОСТЬ?</p>
+    </div>
+
+    <div id="connection-status">
+        ПОДКЛЮЧЕНИЕ...
+    </div>
+
+    <div id="guests-strip"></div>
+
+    <div id="winner-card">
+
+        <h2 id="winner-title">
+            ПОБЕДИТЕЛЬ!
+        </h2>
+
+        <img
+            id="winner-photo"
+            src=""
+            alt="Победитель"
+        >
+
+        <div id="winner-name"></div>
+
+    </div>
+
+    <div id="empty-message">
+        ГОСТЕЙ ЕЩЁ НЕТ
+    </div>
+
+    <script>
+        /*
+            ЖАНАТТЫҢ ЖЕКЕ БАЙЛАНЫС ID-СІ.
+
+            Бұл ID admin.html және lottery.html
+            файлдарындағы ID-мен бірдей болуы керек.
+        */
+        const SCREEN_ID = 'zhanat_luck_2026';
+
+        const peer = new Peer(SCREEN_ID);
+
+        let guests = [];
+        let lotteryIsRunning = false;
+
+        const connectionStatus = document.getElementById(
+            'connection-status'
+        );
+
+        peer.on('open', (id) => {
+            console.log(
+                'ZHANAT MUHAMEDZHANOV SHOW экраны дайын. ID:',
+                id
+            );
+
+            connectionStatus.innerText = 'ЭКРАН ГОТОВ ✅';
+            connectionStatus.style.color = '#00ffcc';
+        });
+
+        peer.on('connection', (conn) => {
+            conn.on('open', () => {
+                console.log('Новое подключение:', conn.peer);
+            });
+
+            conn.on('data', (data) => {
+                if (!data || typeof data !== 'object') {
+                    return;
+                }
+
+                if (data.type === 'REGISTER') {
+                    registerGuest(data);
+
+                    return;
+                }
+
+                if (data.type === 'SPIN') {
+                    startLottery();
+                }
+            });
+
+            conn.on('error', (error) => {
+                console.error('Connection error:', error);
+            });
+        });
+
+        peer.on('error', (error) => {
+            console.error('PeerJS error:', error);
+
+            connectionStatus.innerText = 'ОШИБКА ПОДКЛЮЧЕНИЯ';
+            connectionStatus.style.color = '#ff0055';
+
+            if (error.type === 'unavailable-id') {
+                connectionStatus.innerText =
+                    'ЭКРАН УЖЕ ОТКРЫТ В ДРУГОЙ ВКЛАДКЕ';
+            }
+        });
+
+        function registerGuest(data) {
+            const name = String(data.name || '').trim();
+            const photo = String(data.photo || '');
+
+            if (!name || !photo) {
+                return;
+            }
+
+            guests.push({
+                name: name,
+                photo: photo
+            });
+
+            const image = document.createElement('img');
+
+            image.src = photo;
+            image.className = 'strip-photo';
+            image.alt = name;
+            image.title = name;
+
+            const guestsStrip = document.getElementById(
+                'guests-strip'
+            );
+
+            guestsStrip.appendChild(image);
+
+            guestsStrip.scrollLeft = guestsStrip.scrollWidth;
+
+            console.log(
+                'Участник зарегистрирован:',
+                name,
+                'Всего участников:',
+                guests.length
+            );
+        }
+
+        function startLottery() {
+            if (lotteryIsRunning) {
+                return;
+            }
+
+            if (guests.length === 0) {
+                showEmptyMessage();
+
+                return;
+            }
+
+            lotteryIsRunning = true;
+
+            const winnerCard = document.getElementById(
+                'winner-card'
+            );
+
+            const winnerPhoto = document.getElementById(
+                'winner-photo'
+            );
+
+            const winnerName = document.getElementById(
+                'winner-name'
+            );
+
+            winnerCard.style.display = 'block';
+            winnerCard.classList.remove('flash-win');
+
+            let elapsedTime = 0;
+            let finalGuest = null;
+
+            const interval = setInterval(() => {
+                const randomIndex = Math.floor(
+                    Math.random() * guests.length
+                );
+
+                const randomGuest = guests[randomIndex];
+
+                winnerPhoto.src = randomGuest.photo;
+                winnerName.innerText = randomGuest.name;
+
+                finalGuest = randomGuest;
+
+                elapsedTime += 100;
+
+                if (elapsedTime >= 4500) {
+                    clearInterval(interval);
+
+                    winnerPhoto.src = finalGuest.photo;
+                    winnerName.innerText = finalGuest.name;
+
+                    winnerCard.classList.add('flash-win');
+
+                    lotteryIsRunning = false;
+
+                    console.log(
+                        'Победитель:',
+                        finalGuest.name
+                    );
+                }
+            }, 100);
+        }
+
+        function showEmptyMessage() {
+            const emptyMessage = document.getElementById(
+                'empty-message'
+            );
+
+            emptyMessage.style.display = 'block';
+
+            setTimeout(() => {
+                emptyMessage.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>
+```
